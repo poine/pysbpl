@@ -1,10 +1,9 @@
 #!/usr/bin/env python
 
 '''
- Generates a motion primitive file for sbpl
- This script replaces the matlab utily provided with sbpl.
+ Generates a motion primitive file for SBPL
+ This script replaces the matlab utily provided with SBPL.
  It still puzzles me why people keep using this prehistoric monstrosity...
- Do you really prefer 2k lines full of globals to 100 structured ones?
 '''
 
 import os, logging, math, numpy as np, scipy, matplotlib.image, matplotlib.pyplot as plt
@@ -147,19 +146,27 @@ def check_all_dirs(f, show_prim_id):
 
 def gen_oscar_prims():
     base_prims = [
-        {'kind':MPrim_line, 'params':{'len_c': 1, 'cost':2}},            # forward straight short
-        {'kind':MPrim_line, 'params':{'len_c': 8, 'cost':1}},            # forward straight long
+        {'kind':MPrim_line, 'params':{'len_c': 1, 'cost':2}},             # forward straight short
+        {'kind':MPrim_line, 'params':{'len_c': 8, 'cost':1}},             # forward straight long
         #{'kind':MPrim_line, 'params':{'len_c':-1, 'cost':5}},            # backward straight short
-        {'kind':MPrim_arc,  'params':{'R':0.15,  'dth_c': 1, 'cost':4}}, # forward sharp turning left
-        {'kind':MPrim_arc,  'params':{'R':0.15,  'dth_c':-1, 'cost':4}}, # forward sharp turning right
-        {'kind':MPrim_arc,  'params':{'R':0.3,  'dth_c': 1, 'cost':3}},  # forward wide turning left
-        {'kind':MPrim_arc,  'params':{'R':0.3,  'dth_c':-1, 'cost':3}},  # forward wide turning right
+        {'kind':MPrim_arc,  'params':{'R':0.15,  'dth_c': 1, 'cost':7}},  # forward sharp turning left
+        {'kind':MPrim_arc,  'params':{'R':0.15,  'dth_c':-1, 'cost':7}},  # forward sharp turning right
+        {'kind':MPrim_arc,  'params':{'R':0.30,  'dth_c': 1, 'cost':6}},  # forward wide turning left
+        {'kind':MPrim_arc,  'params':{'R':0.30,  'dth_c':-1, 'cost':6}},  # forward wide turning right
+        {'kind':MPrim_arc,  'params':{'R':0.50,  'dth_c': 1, 'cost':5}},  # forward wide turning left
+        {'kind':MPrim_arc,  'params':{'R':0.50,  'dth_c':-1, 'cost':5}},  # forward wide turning right
+        {'kind':MPrim_arc,  'params':{'R':0.75,  'dth_c': 1, 'cost':4}},  # forward wide turning left
+        {'kind':MPrim_arc,  'params':{'R':0.75,  'dth_c':-1, 'cost':4}},  # forward wide turning right
+        {'kind':MPrim_arc,  'params':{'R':1.00,  'dth_c': 1, 'cost':3}},  # forward wide turning left
+        {'kind':MPrim_arc,  'params':{'R':1.00,  'dth_c':-1, 'cost':3}},  # forward wide turning right
+        {'kind':MPrim_arc,  'params':{'R':1.25,  'dth_c': 1, 'cost':2}},  # forward wide turning left
+        {'kind':MPrim_arc,  'params':{'R':1.25,  'dth_c':-1, 'cost':2}},  # forward wide turning right
         #{'kind':MPrim_arc,  'params':{'R':-0.15, 'dth_c':-1, 'cost':6}}, # backward turning left
         #{'kind':MPrim_arc,  'params':{'R':-0.15, 'dth_c': 1, 'cost':6}}  # backward turning right
     ]
     f = MPrimFactory(base_prims, grid_resolution=0.005)
     f.build()
-    f.write('/home/poine/work/oscar.git/oscar/oscar_navigation/params/sbpl/oscar.mprim')
+    f.write('/home/poine/work/oscar.git/oscar/oscar_navigation/params/sbpl/oscar_2.mprim')
     
 def gen_julie_prims():
     base_prims = [
