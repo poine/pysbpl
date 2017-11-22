@@ -149,8 +149,8 @@ def gen_oscar_prims():
         {'kind':MPrim_line, 'params':{'len_c': 1, 'cost':2}},             # forward straight short
         {'kind':MPrim_line, 'params':{'len_c': 8, 'cost':1}},             # forward straight long
         #{'kind':MPrim_line, 'params':{'len_c':-1, 'cost':5}},            # backward straight short
-        {'kind':MPrim_arc,  'params':{'R':0.15,  'dth_c': 1, 'cost':7}},  # forward sharp turning left
-        {'kind':MPrim_arc,  'params':{'R':0.15,  'dth_c':-1, 'cost':7}},  # forward sharp turning right
+        {'kind':MPrim_arc,  'params':{'R':0.24,  'dth_c': 1, 'cost':7}},  # forward sharp turning left
+        {'kind':MPrim_arc,  'params':{'R':0.24,  'dth_c':-1, 'cost':7}},  # forward sharp turning right
         {'kind':MPrim_arc,  'params':{'R':0.30,  'dth_c': 1, 'cost':6}},  # forward wide turning left
         {'kind':MPrim_arc,  'params':{'R':0.30,  'dth_c':-1, 'cost':6}},  # forward wide turning right
         {'kind':MPrim_arc,  'params':{'R':0.50,  'dth_c': 1, 'cost':5}},  # forward wide turning left
@@ -166,7 +166,7 @@ def gen_oscar_prims():
     ]
     f = MPrimFactory(base_prims, grid_resolution=0.005)
     f.build()
-    f.write('/home/poine/work/oscar.git/oscar/oscar_navigation/params/sbpl/oscar_2.mprim')
+    f.write('/home/poine/work/oscar.git/oscar/oscar_navigation/params/sbpl/oscar_3.mprim')
     
 def gen_julie_prims():
     base_prims = [

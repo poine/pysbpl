@@ -65,9 +65,9 @@ cdef class EnvironmentNAVXYTHETALAT:
         else:
             self.initialize_from_params(**kwargs)
         
-        self.thisptr.SetEnvParameter("cost_obsthresh", 254)
-        self.thisptr.SetEnvParameter("cost_inscribed_thresh", 251)
-        self.thisptr.SetEnvParameter("cost_possibly_circumscribed_thresh", 165)
+        self.thisptr.SetEnvParameter("cost_obsthresh", kwargs['obs_thresh'])
+        self.thisptr.SetEnvParameter("cost_inscribed_thresh", kwargs['inscribed_thresh'])
+        self.thisptr.SetEnvParameter("cost_possibly_circumscribed_thresh", kwargs['possibly_circumscribed_thresh'])
         
         # not sure how to get that without setting them again, or is it alsways 0 and 1 ?
         cdef double startx = kwargs['start'][0], starty = kwargs['start'][1], starttheta = kwargs['start'][2]
@@ -102,7 +102,7 @@ cdef class EnvironmentNAVXYTHETALAT:
             perimeter.push_back(pt)
         cdef double cellsize_m = kwargs['map'].resolution
         cdef double nominalvel_mpersecs = kwargs['vel'], timetoturn45degsinplace_secs = kwargs['time_45_deg']
-        cdef unsigned char obsthresh = 251
+        cdef unsigned char obsthresh =  kwargs['obs_thresh']
         cdef const char* c_mprim_path = kwargs['mprim_path']
         res = self.thisptr.InitializeEnv(width, height, mapdata,
                                          startx, starty, starttheta, goalx, goaly, goaltheta,
