@@ -139,7 +139,7 @@ cdef class ARAPlanner:
     cdef c_EnvironmentNAVXYTHETALAT *env
 
     def __cinit__(self, EnvironmentNAVXYTHETALAT e):
-        cdef bool bsearch = False;
+        cdef bool bsearch = True;
         self.thisptr = new c_ARAPlanner(<c_DiscreteSpaceInformation*>e.thisptr, bsearch)
         self.env = <c_EnvironmentNAVXYTHETALAT*>e.thisptr
 
@@ -151,7 +151,7 @@ cdef class ARAPlanner:
             print 'set_goal failed'
         cdef double initialEpsilon = 3.0
         self.thisptr.set_initialsolution_eps(initialEpsilon)
-        cdef bool bsearchuntilfirstsolution = False;
+        cdef bool bsearchuntilfirstsolution = True;
         self.thisptr.set_search_mode(bsearchuntilfirstsolution);
         
     def run(self):
@@ -160,7 +160,9 @@ cdef class ARAPlanner:
         cdef vector[int] sol
         cdef int bRet = self.thisptr.replan(allocated_time, &sol)
         print 'bret ',  bRet
-
+        if bRet != 1: 
+            print("no solution")
+            return None, None
         # discrete solution
         cdef vector[int].iterator it = sol.begin()
         cdef int x=0, y=0, theta=0
@@ -179,6 +181,6 @@ cdef class ARAPlanner:
             xys.append([deref(it2).x, deref(it2).y])
             thetas.append(deref(it2).theta)
             inc(it2)
-        print('cont sol has {} values'.format(len(xys)))
+        print('continuous solution has {} values'.format(len(xys)))
 
         return np.array(xys), np.array(thetas)

@@ -166,19 +166,9 @@ def gen_oscar_prims():
     ]
     f = MPrimFactory(base_prims, grid_resolution=0.005)
     f.build()
-    f.write('/home/poine/work/oscar.git/oscar/oscar_navigation/params/sbpl/oscar_3.mprim')
-    
-def gen_julie_prims():
-    base_prims = [
-        {'kind':MPrim_line, 'params':{'len_c': 1, 'cost':2}},          # forward straight short
-        {'kind':MPrim_line, 'params':{'len_c': 8, 'cost':1}},          # forward straight long
-        {'kind':MPrim_line, 'params':{'len_c':-1, 'cost':5}},          # backward straight short
-        {'kind':MPrim_arc,  'params':{'R':3.,  'dth_c': 1, 'cost':3}}, # forward turning left
-        {'kind':MPrim_arc,  'params':{'R':3.,  'dth_c':-1, 'cost':3}}, # forward turning right
-        {'kind':MPrim_arc,  'params':{'R':-3., 'dth_c':-1, 'cost':6}}, # backward turning left
-        {'kind':MPrim_arc,  'params':{'R':-3., 'dth_c': 1, 'cost':6}}  # backward turning right
-    ] 
-    f = MPrimFactory(base_prims, grid_resolution=0.025)
+    f.plot()
+    plt.show()
+    f.write('/home/schmittle/Research/boxes/sbpl_pushr/pysbpl/src/test.mprim')
     
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
