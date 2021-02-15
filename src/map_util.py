@@ -11,7 +11,7 @@ class Map:
     def load_yaml(self, yaml_path):
         print(' loading map from yaml {}'.format(yaml_path))
         with open(yaml_path, "r") as f:
-            _yaml = yaml.load(f)
+            _yaml = yaml.safe_load(f)
             map_img_path = os.path.join(os.path.dirname(yaml_path), _yaml['image'])
             self.img = cv2.imread(map_img_path, 0)
             self.img[self.img==0] = 1

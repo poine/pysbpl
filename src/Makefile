@@ -1,6 +1,6 @@
 pysbpl.so: sbpl.pyx setup_sbpl_ext.py
 	@echo "## Building sbpl python extension ##"
-	python setup_sbpl_ext.py build_ext --inplace
+	python3 setup_sbpl_ext.py build_ext --inplace
 	@echo "## all done##\n"
 
 

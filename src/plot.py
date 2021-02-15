@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 import matplotlib
-from matplotlib.backends.backend_gtk3agg import FigureCanvasGTK3Agg as FigureCanvas
 import matplotlib.pyplot as plt
-import pysbpl
 
 map_resolution = 0.1
 # #map_origin = [0., -0.3]
