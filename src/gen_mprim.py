@@ -173,16 +173,6 @@ def gen_oscar_prims():
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
     np.set_printoptions(precision=3, linewidth=300)
-    # julie
-    #f = MPrimFactory(grid_resolution=0.025)
+
     # oscar
     gen_oscar_prims()
-    #f = MPrimFactory(grid_resolution=0.005)
-
-    #f.build()#start_angle=0, end_angle=1)
-    #f.write('/tmp/foo.mprim')
-    #check_all_dirs(f, show_prim_id=[3])
-    #f.plot(show_angle=[15], show_prim_id=[5, 6])
-    #plt.show()
-
-    

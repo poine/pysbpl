@@ -5,7 +5,7 @@ import map_util
 LOG = logging.getLogger('sbpl_xytheta')
 import pdb
 
-import pysbpl, sbpl_gui as gui
+import pysbpl, plot as gui
 
 class Config:
     def __init__(self, **kwargs):

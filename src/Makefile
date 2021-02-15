@@ -5,5 +5,5 @@ pysbpl.so: sbpl.pyx setup_sbpl_ext.py
 
 
 clean:
-	rm -rf *~ *.pyc sbpl.cpp pysbpl.so build
+	rm -rf *~ *.pyc sbpl.cpp pysbpl.so build *.mprim
 
