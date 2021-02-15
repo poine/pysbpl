@@ -18,6 +18,9 @@ class Planner:
         self.planner = pysbpl.ARAPlanner(self.config.env)
 
     def plan(self, start, goal):
+        print('Planning!')
+        print('Start: {}'.format(str(self.kwargs['start'])))
+        print('Goal: {}'.format(str(self.kwargs['goal'])))
         self.kwargs['start'] = start
         self.kwargs['goal'] = goal 
         self.config = Config(**self.kwargs)

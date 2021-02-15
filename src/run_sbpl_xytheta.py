@@ -12,7 +12,7 @@ if __name__ == '__main__':
         'map': map_util.Map(yaml_path='/home/schmittle/mushr/catkin_ws/src/mushr_sim/maps/sandbox.yaml'),
         'perimeter':[[-0.05, -0.05], [0.05, -0.05], [0.05, 0.05], [-0.05, 0.05]],
         'start':[5.21, 5.16, 0.0],
-        'goal': [5.20, 50.16, 0.], # one loop
+        'goal': [5.20, 70.16, 0.], # one loop
         'goal_tol':[0.5, 0.5, 0.1],
         'vel':0.5, 'time_45_deg':10,
         'mprim_path': (src_dir + '/mprim/pushr.mprim').encode('utf-8'),

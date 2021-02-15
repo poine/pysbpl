@@ -144,7 +144,6 @@ cdef class ARAPlanner:
         self.env = <c_EnvironmentNAVXYTHETALAT*>e.thisptr
 
     def initialize(self, start_id, goal_id):
-        print 'in planner initialize'
         if self.thisptr.set_start(start_id) == 0:
             print 'set_start failed'
         if self.thisptr.set_goal(goal_id) == 0:
@@ -155,14 +154,14 @@ cdef class ARAPlanner:
         self.thisptr.set_search_mode(bsearchuntilfirstsolution);
         
     def run(self):
-        print 'in planner run'
         cdef double allocated_time = 30.
         cdef vector[int] sol
         cdef int bRet = self.thisptr.replan(allocated_time, &sol)
-        print 'bret ',  bRet
         if bRet != 1: 
-            print("no solution")
+            print("No solution!")
             return None, None
+        else:
+            print("Solution Found!")
         # discrete solution
         cdef vector[int].iterator it = sol.begin()
         cdef int x=0, y=0, theta=0
