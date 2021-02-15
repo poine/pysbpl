@@ -14,6 +14,7 @@ class Window:
          image[:,:,0] = np.invert(map_file.img)
          image[:,:,1] = np.invert(map_file.img)
          image[:,:,2] = np.invert(map_file.img)
+         image[image==254]=0
          plt.imshow(image)
          ticks = matplotlib.ticker.FuncFormatter(lambda _x, pos: '{0:g}'.format(_x*map_file.resolution))
          plt.gca().xaxis.set_major_formatter(ticks)

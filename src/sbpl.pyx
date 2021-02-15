@@ -54,6 +54,7 @@ cdef class EnvironmentNAVXYTHETALAT:
     cdef c_EnvironmentNAVXYTHETALAT *thisptr      # hold a C++ instance which we're wrapping
 
     def __cinit__(self):
+        cdef unsigned char* mapdata
         self.thisptr = new c_EnvironmentNAVXYTHETALAT()
         if self.thisptr is NULL:
             raise MemoryError()
@@ -81,15 +82,14 @@ cdef class EnvironmentNAVXYTHETALAT:
         print "loading environment from {}".format(filename)
         self.thisptr.InitializeEnv(filename)
         
-    def initialize_from_params(self, **kwargs):
+    def initialize_from_params(self, first_time=True, **kwargs):
         _map = kwargs['map']
         cdef int width = _map.width, height = _map.height
-
-        cdef unsigned char* mapdata
-        mapdata = <unsigned char *>malloc(width*height*sizeof(unsigned char))
-        for i, pixel_row in enumerate(_map.img[::-1]):  # same as flipud
-            for j in range(len(pixel_row)):
-                mapdata[i*width + j] =  int(pixel_row[j]*255)
+        if first_time:
+            mapdata = <unsigned char *>malloc(width*height*sizeof(unsigned char))
+            for i, pixel_row in enumerate(_map.img[::-1]):  # same as flipud
+                for j in range(len(pixel_row)):
+                    mapdata[i*width + j] =  int(pixel_row[j]*255)
             
                 
         cdef double startx = kwargs['start'][0], starty = kwargs['start'][1], starttheta = kwargs['start'][2]
@@ -110,9 +110,9 @@ cdef class EnvironmentNAVXYTHETALAT:
                                          perimeter, cellsize_m,
                                          nominalvel_mpersecs, timetoturn45degsinplace_secs,
                                          obsthresh, c_mprim_path)
-        free(mapdata)
+        #free(mapdata)
         if not res: return []
-        
+
 
 #
 # SBPLPlanner
@@ -139,7 +139,7 @@ cdef class ARAPlanner:
     cdef c_EnvironmentNAVXYTHETALAT *env
 
     def __cinit__(self, EnvironmentNAVXYTHETALAT e):
-        cdef bool bsearch = True;
+        cdef bool bsearch = False;
         self.thisptr = new c_ARAPlanner(<c_DiscreteSpaceInformation*>e.thisptr, bsearch)
         self.env = <c_EnvironmentNAVXYTHETALAT*>e.thisptr
 
@@ -150,11 +150,11 @@ cdef class ARAPlanner:
             print 'set_goal failed'
         cdef double initialEpsilon = 3.0
         self.thisptr.set_initialsolution_eps(initialEpsilon)
-        cdef bool bsearchuntilfirstsolution = True;
+        cdef bool bsearchuntilfirstsolution = False;
         self.thisptr.set_search_mode(bsearchuntilfirstsolution);
         
     def run(self):
-        cdef double allocated_time = 30.
+        cdef double allocated_time = 1.
         cdef vector[int] sol
         cdef int bRet = self.thisptr.replan(allocated_time, &sol)
         if bRet != 1: 
@@ -180,6 +180,6 @@ cdef class ARAPlanner:
             xys.append([deref(it2).x, deref(it2).y])
             thetas.append(deref(it2).theta)
             inc(it2)
-        print('continuous solution has {} values'.format(len(xys)))
+        print('Continuous solution has {} values'.format(len(xys)))
 
         return np.array(xys), np.array(thetas)
