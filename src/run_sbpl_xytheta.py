@@ -9,7 +9,7 @@ import pysbpl, plot as gui
 if __name__ == '__main__':
     src_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
     params = {
-        'map': map_util.Map(yaml_path='/home/schmittle/mushr/catkin_ws/src/mushr_sim/maps/sandbox.yaml'),
+        'map': map_util.Map(yaml_path=src_dir + '/maps/sandbox.yaml'),
         'perimeter':[[-0.05, -0.05], [0.05, -0.05], [0.05, 0.05], [-0.05, 0.05]],
         'start':[5.21, 5.16, 0.0],
         'goal': [5.20, 70.16, 0.], # one loop
