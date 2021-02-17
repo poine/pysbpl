@@ -1,9 +1,5 @@
-#!/usr/bin/env python
-# Planner python wrapper
 import time
-import os
-import map_util
-import pysbpl, plot as gui
+import pysbpl
 
 class Config:
     def __init__(self, **kwargs):
@@ -14,7 +10,7 @@ class Config:
 class Planner:
     def __init__(self, **kwargs):
         self.kwargs = kwargs
-        if kwargs['start'] is None:
+        if 'start' not in kwargs.keys():
             kwargs['start'] = [0.0, 0.0,0.0]
             kwargs['goal'] = [2.0, 0.0,0.0]
         self.config = Config(**kwargs)

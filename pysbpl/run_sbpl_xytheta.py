@@ -2,9 +2,10 @@
 # An Example using pysbplyaml_path
 
 import os
+import pysbpl
 import map_util
+import plot
 from planner import Planner
-import pysbpl, plot as gui
 
 if __name__ == '__main__':
     src_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
@@ -26,7 +27,7 @@ if __name__ == '__main__':
     points, headings = planner.plan(params['start'], params['goal'])
 
     if points is not None:
-        g = gui.Window()
+        g = plot.Window()
         g.display_map(params['map'])
         g.display_path(points)
         g.show()
