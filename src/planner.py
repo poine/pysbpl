@@ -14,6 +14,9 @@ class Config:
 class Planner:
     def __init__(self, **kwargs):
         self.kwargs = kwargs
+        if kwargs['start'] is None:
+            kwargs['start'] = [0.0, 0.0,0.0]
+            kwargs['goal'] = [2.0, 0.0,0.0]
         self.config = Config(**kwargs)
         self.planner = pysbpl.ARAPlanner(self.config.env)
         print('Planner Initialized')

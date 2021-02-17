@@ -11,9 +11,9 @@ if __name__ == '__main__':
     params = {
         'map': map_util.Map(yaml_path=src_dir + '/maps/sandbox.yaml'),
         'perimeter':[[-0.05, -0.05], [0.05, -0.05], [0.05, 0.05], [-0.05, 0.05]],
-        'start':[5.21, 5.16, 0.0],
-        'goal': [5.20, 70.16, 0.], # one loop
-        'goal_tol':[0.5, 0.5, 0.1],
+        'start':[5.21, 5.16, 0.0], # not required
+        'goal': [5.20, 70.16, 0.], # not required 
+        'goal_tol':[0.5, 0.5, 0.1], 
         'vel':0.5, 'time_45_deg':10,
         'mprim_path': (src_dir + '/mprim/pushr.mprim').encode('utf-8'),
         'obs_thresh': 200,
