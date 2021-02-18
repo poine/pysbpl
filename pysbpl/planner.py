@@ -1,9 +1,9 @@
 import time
-import pysbpl
+from pysbpl import sbpl
 
 class Config:
     def __init__(self, **kwargs):
-        self.env = pysbpl.EnvironmentNAVXYTHETALAT()
+        self.env = sbpl.EnvironmentNAVXYTHETALAT()
         self.start_id, self.goal_id = self.env.InitializeEnv(**kwargs)
         self.map = kwargs['map']
 
@@ -14,7 +14,7 @@ class Planner:
             kwargs['start'] = [0.0, 0.0,0.0]
             kwargs['goal'] = [2.0, 0.0,0.0]
         self.config = Config(**kwargs)
-        self.planner = pysbpl.ARAPlanner(self.config.env)
+        self.planner = sbpl.ARAPlanner(self.config.env)
         print('Planner Initialized')
 
     def plan(self, start, goal):

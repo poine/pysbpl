@@ -1,14 +1,12 @@
 #!/usr/bin/env python
-# An Example using pysbplyaml_path
+# An Example using pysbpl
 
 import os
 import pysbpl
-import map_util
-import plot
-from planner import Planner
+from pysbpl import map_util, plot, planner
 
 if __name__ == '__main__':
-    src_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+    src_dir = os.path.dirname(pysbpl.__file__)
     params = {
         'map': map_util.Map(yaml_path=src_dir + '/maps/sandbox.yaml'),
         'perimeter':[[-0.05, -0.05], [0.05, -0.05], [0.05, 0.05], [-0.05, 0.05]],
@@ -23,8 +21,8 @@ if __name__ == '__main__':
     }
 
     # Basic API
-    planner = Planner(**params)
-    points, headings = planner.plan(params['start'], params['goal'])
+    sbpl_planner = planner.Planner(**params)
+    points, headings = sbpl_planner.plan(params['start'], params['goal'])
 
     if points is not None:
         g = plot.Window()
