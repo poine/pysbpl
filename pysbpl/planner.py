@@ -4,15 +4,15 @@ from pysbpl import sbpl
 class Config:
     def __init__(self, **kwargs):
         self.env = sbpl.EnvironmentNAVXYTHETALAT()
-        self.start_id, self.goal_id = self.env.InitializeEnv(**kwargs)
         self.map = kwargs['map']
+        self.env.update_map(self.map) # loads map once b4 planning
+
+    def initEnv(self, **kwargs):
+        self.start_id, self.goal_id = self.env.InitializeEnv(**kwargs)
 
 class Planner:
     def __init__(self, **kwargs):
         self.kwargs = kwargs
-        if 'start' not in kwargs.keys():
-            kwargs['start'] = [0.0, 0.0,0.0]
-            kwargs['goal'] = [2.0, 0.0,0.0]
         self.config = Config(**kwargs)
         self.planner = sbpl.ARAPlanner(self.config.env)
         print('Planner Initialized')
@@ -20,7 +20,8 @@ class Planner:
     def plan(self, start, goal):
         self.kwargs['start'] = start
         self.kwargs['goal'] = goal 
-        self.config = Config(first_time=False, **self.kwargs)
+        self.config.initEnv(**self.kwargs)
+
         print('Planning!')
         print('Start: {}'.format(str(self.kwargs['start'])))
         print('Goal: {} \n'.format(str(self.kwargs['goal'])))
