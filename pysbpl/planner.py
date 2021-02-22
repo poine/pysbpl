@@ -1,4 +1,5 @@
 import time
+import numpy as np
 from pysbpl import sbpl
 
 class Config:
@@ -18,13 +19,17 @@ class Planner:
         print('Planner Initialized')
 
     def plan(self, start, goal):
-        self.kwargs['start'] = start
-        self.kwargs['goal'] = goal 
-        self.config.initEnv(**self.kwargs)
 
         print('Planning!')
-        print('Start: {}'.format(str(self.kwargs['start'])))
-        print('Goal: {} \n'.format(str(self.kwargs['goal'])))
+        print('Start: {}'.format(str(start)))
+        print('Goal: {} \n'.format(str(goal)))
+
+        # Transform from origin
+        origin = np.array(self.config.map.origin)
+        self.kwargs['start'] = np.array(start) - origin 
+        self.kwargs['goal'] = np.array(goal) - origin
+
+        self.config.initEnv(**self.kwargs)
         self.planner.initialize(self.config.start_id, self.config.goal_id)
         return self.run()
         
