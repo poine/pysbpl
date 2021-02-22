@@ -10,8 +10,8 @@ Python3 bindings and utilities for SBPL ( Search Based Planning Library, see htt
 2. Clone this repo  
     ` git clone https://github.com/schmittlema/pysbpl.git` 
 3. Build. Feel free to remove user to make install system wide
-   - For Development: `python3 setup.py develop --user`
-   - For Use: `python3 setup.py install --user`
+   - For Development: `pip install -e . --user`
+   - For Use: `pip install . --user`
 4. Test by running: `python3 examples/run_sbpl_xytheta.py`. 
 
 If everything worked a visualization should appear
