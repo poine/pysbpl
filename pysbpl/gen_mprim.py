@@ -5,7 +5,7 @@
  This script replaces the matlab utily provided with SBPL.
  It still puzzles me why people keep using this prehistoric monstrosity...
  
- Schmittle: Modified heavily for readability and connection with limit surface
+ Schmittle: Modified heavily for readability, modularity, and connection with limit surface
 '''
 
 import os, math, numpy as np, matplotlib.pyplot as plt
@@ -15,18 +15,35 @@ class MPrim:
     Base motion primitive class
     '''
     def __init__(self, base_prim_id, th_curr, th_res, grid_res, **kwargs):
+        '''
+        Constructor for super class
+        **Parameters**
+          - `base_prim_id` (int): arbitrary ID 
+          - `th_curr` (int): index of given theta 
+          - `th_res` (double): theta resolution 
+          - `grid_res` (double): resolution of lattice
+        **Returns**
+          - **None** 
+        '''
         self.base_prim_id, self.th_curr = base_prim_id, th_curr
-        self.th = th_curr * th_res
-        self.cth, self.sth = math.cos(self.th), math.sin(self.th)
+        self.th = th_curr * th_res # current theta radians
+        self.cos_th, self.sin_th = math.cos(self.th), math.sin(self.th) 
         self.start_pt_c, self.start_pt = np.array([0, 0, th_curr]), np.array([0, 0, self.th])
-        self.cost = kwargs.get('cost', 1)
-        self.interm_nb = kwargs.get('interm_nb', 10)
-        self.interm_dist = kwargs.get('interm_dist', grid_res)
+        self.cost = kwargs.get('cost', 1) # mprim cost
+        self.interm_nb = kwargs.get('interm_nb', 10) # number of interim points
+        self.interm_dist = kwargs.get('interm_dist', grid_res) # distance between interim points
+        self.th_nb = 2*math.pi/th_res # number of discrete angles
         self.grid_resolution = grid_res
         self.th_res = th_res
-        self.th_nb = 2*math.pi/th_res
         
     def to_string(self):
+        '''
+        Converts mprim to string for .mprim file
+        **Parameters**
+          - **None** 
+        **Returns**
+          - `txt` (str): mprim file string for given mprim
+        '''
         txt  = 'primID: {}\n'.format(self.base_prim_id)
         txt += 'startangle_c: {}\n'.format(self.th_curr)
         txt += 'endpose_c: {} {} {}\n'.format(*self.end_pt_c)
@@ -35,47 +52,94 @@ class MPrim:
         txt += ''.join(['{:.4f} {:.4f} {:.4f}\n'.format(*interm_pt) for interm_pt in self.interm_pts]) 
         return txt
     
-    def round_xy(self, X):
-        X_c = [int(np.round(X[0]/self.grid_resolution)), int(np.round(X[1]/self.grid_resolution)), int(round(X[2]/self.th_res))%self.th_nb]
-        X_r = [X_c[0]*self.grid_resolution, X_c[1]*self.grid_resolution, X[2]]
-        return np.array(X_c), np.array(X_r)
-
-def pt_on_0R_circle(R, th): return [R*math.sin(th), R*(1-math.cos(th))]
+    def round(self, real_pt):
+        '''
+        Converts real number to grid point
+        and returns real number as a multiple of resolution
+        **Parameters**
+          - `real_pt` (list): x, y, theta point
+        **Returns**
+          - `grid_pt` (list): x, y, theta point on grid
+          - real_pt_g` (list): x, y, theta point multiple of grid resolution
+        '''
+        grid_pt = [int(np.round(real_pt[0]/self.grid_resolution)), int(np.round(real_pt[1]/self.grid_resolution)), int(round(real_pt[2]/self.th_res))%self.th_nb]
+        real_pt_g = [grid_pt[0]*self.grid_resolution, grid_pt[1]*self.grid_resolution, grid_pt[2]]
+        return np.array(grid_pt), np.array(real_pt_g)
 
 class MPrim_arc(MPrim):
     '''
     Arc motion primitive
     '''
     def __init__(self, base_prim_id, th_curr, th_res, grid_res, **kwargs):
+        '''
+        Constructor for arc class
+        **Parameters**
+          - `base_prim_id` (int): arbitrary ID 
+          - `th_curr` (int): index of given theta 
+          - `th_res` (double): theta resolution 
+          - `grid_res` (double): resolution of lattice
+        **Returns**
+          - **None** 
+        '''
+        # super class constructor
         MPrim.__init__(self, base_prim_id, th_curr, th_res, grid_res, **kwargs)
-        dth_curr, R = kwargs['dth_curr'], kwargs['R']  # heading variation and radius
-        dth = dth_curr * self.th_res        
-        X1 = pt_on_0R_circle(R if dth>0 else -R, dth)
-        R1 = np.array([[self.cth, -self.sth],[self.sth, self.cth]])
-        X2 = np.dot(R1, X1)
+
+        dth_curr, R = kwargs['dth_curr'], kwargs['R']  # heading variation and arc radius
+        dth = dth_curr * self.th_res # heading variation radians 
+        X1 = self.pt_on_circle(R if dth>0 else -R, dth)
+        R1 = np.array([[self.cos_th, -self.sin_th],[self.sin_th, self.cos_th]]) # rotation matrix
+        X2 = np.dot(R1, X1) # end point rotated to current angle (th)
         self.end_pt =  np.array([X2[0], X2[1], self.th+dth])
-        self.end_pt_c, self.end_pt_grid = self.round_xy(self.end_pt)
+        self.end_pt_c, self.end_pt_grid = self.round(self.end_pt) # discretize
+
+        # interim points
         interm_ths1 = np.linspace(0, dth, self.interm_nb)
-        interm_pts1 = [pt_on_0R_circle(R if dth>0 else -R, th) for th in interm_ths1]
+        interm_pts1 = [self.pt_on_circle(R if dth>0 else -R, th) for th in interm_ths1]
         self.interm_pts = np.zeros((self.interm_nb, 3))
         for i in range(self.interm_nb):
             self.interm_pts[i,:2] = np.dot(R1, interm_pts1[i])
             self.interm_pts[i,2] = self.th + interm_ths1[i]
-        self.interm_pts[-1] =  self.end_pt_grid # is that needed? CHECKME
+        # discretize last point to match end_pt_c, not sure if we need repeated points
+        self.interm_pts[-1] =  self.end_pt_grid
+
+    def pt_on_circle(self, R, dtheta): 
+        '''
+        For a given dtheta give me the x, y of the point on the circle
+        See: https://math.stackexchange.com/questions/260096/find-the-coordinates-of-a-point-on-a-circle
+        & here: https://math.stackexchange.com/questions/1384994/rotate-a-point-on-a-circle-with-known-radius-and-position
+        for more details
+        **Parameters**
+          - `R` (double): arc radius
+          - `dtheta` (double): delta theta 
+        **Returns**
+          - `[x, y]` (array): x,y point on circle
+        '''
+        return [R*math.sin(dtheta), R*(1-math.cos(dtheta))]
 
 class MPrim_line(MPrim):
     '''
     Straight line motion primitive
     '''
     def __init__(self, base_prim_id, th_curr, th_res, grid_res, **kwargs):
+        '''
+        Constructor for arc class
+        **Parameters**
+          - `base_prim_id` (int): arbitrary ID 
+          - `th_curr` (int): index of given theta 
+          - `th_res` (double): theta resolution 
+          - `grid_res` (double): resolution of lattice
+        **Returns**
+          - **None** 
+        '''
+        # super class constructor
         MPrim.__init__(self, base_prim_id, th_curr, th_res, grid_res, **kwargs)
-        desired_len = kwargs['len_c'] * self.grid_resolution
+        desired_len = kwargs['len_c'] * self.grid_resolution # meters
         actual_len = desired_len
         th_err, max_th_err = float("inf"), 0.5*self.th_res
         i = 0
         while abs(th_err) > max_th_err and i<5:
-            self.end_pt = self.start_pt + [self.cth*actual_len, self.sth*actual_len, 0]
-            self.end_pt_c, self.end_pt_grid = self.round_xy(self.end_pt)
+            self.end_pt = self.start_pt + [self.cos_th*actual_len, self.sin_th*actual_len, 0]
+            self.end_pt_c, self.end_pt_grid = self.round(self.end_pt)
             th_err = self.th - math.atan2(self.end_pt_grid[1], self.end_pt_grid[0])
             if np.sign(desired_len) < 0: th_err += math.pi  # account for driving backwards
             if th_err > math.pi: th_err = 2*math.pi-th_err  # make sure errors is in the right direction
