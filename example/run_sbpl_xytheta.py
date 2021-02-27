@@ -24,7 +24,7 @@ if __name__ == '__main__':
 
     # Basic API
     sbpl_planner = planner.Planner(**params)
-    points, headings = sbpl_planner.plan(params['start'], params['goal'])
+    points, headings, actions = sbpl_planner.plan(params['start'], params['goal'])
 
     if points is not None:
         g = plot.Window()

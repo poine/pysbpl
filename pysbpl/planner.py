@@ -35,9 +35,9 @@ class Planner:
         
     def run(self):
         start_time = time.time()
-        points, headings = self.planner.run()
+        points, headings, primitives = self.planner.run()
         print('Planning Time: {}'.format(round(time.time() - start_time, 4)))
         if points is None:
             return None, None
         points += self.config.map.origin[:2]
-        return points, headings
+        return points, headings, primitives

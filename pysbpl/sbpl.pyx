@@ -49,6 +49,15 @@ cdef extern from "sbpl/discrete_space_information/environment_navxythetalat.h":
         void GetCoordFromState(int stateID, int& x, int& y, int& theta)
         void ConvertStateIDPathintoXYThetaPath(vector[int]* stateIDPath, vector[c_sbpl_xy_theta_pt_t]* xythetaPath)
         bool SetEnvParameter(const char* parameter, int value)
+        void GetActionsFromStateIDPath(vector[int]* sol , vector[EnvNAVXYTHETALATAction_t]* actions);
+    cdef struct EnvNAVXYTHETALATAction_t: 
+        char starttheta
+        char dX
+        char dY
+        char endtheta
+        unsigned int cost
+        int motprimID
+        double turning_radius
        
 cdef class EnvironmentNAVXYTHETALAT:
     cdef c_EnvironmentNAVXYTHETALAT *thisptr      # hold a C++ instance which we're wrapping
@@ -159,12 +168,14 @@ cdef class ARAPlanner:
     def run(self):
         cdef double allocated_time = 1.
         cdef vector[int] sol
+        cdef vector[EnvNAVXYTHETALATAction_t] actions 
         cdef int bRet = self.thisptr.replan(allocated_time, &sol)
         if bRet != 1: 
             print("No solution!")
             return None, None
         else:
             print("Solution Found!")
+
         # discrete solution
         cdef vector[int].iterator it = sol.begin()
         cdef int x=0, y=0, theta=0
@@ -185,4 +196,6 @@ cdef class ARAPlanner:
             inc(it2)
         print('Continuous solution has {} values'.format(len(xys)))
 
-        return np.array(xys), np.array(thetas)
+        # Get actions
+        self.env.GetActionsFromStateIDPath(&sol, &actions);
+        return np.array(xys), np.array(thetas), actions 
