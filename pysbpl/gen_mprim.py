@@ -122,7 +122,7 @@ class MPrim_line(MPrim):
     '''
     def __init__(self, base_prim_id, th_curr, th_res, grid_res, **kwargs):
         '''
-        Constructor for arc class
+        Constructor for straight class
         **Parameters**
           - `base_prim_id` (int): arbitrary ID 
           - `th_curr` (int): index of given theta 
@@ -136,21 +136,25 @@ class MPrim_line(MPrim):
         desired_len = kwargs['len_c'] * self.grid_resolution # meters
         actual_len = desired_len
         th_err, max_th_err = float("inf"), 0.5*self.th_res
+
         i = 0
+        # discretization can create a change in theta
+        # Try lengthening the line to better fit theta
+        # this is a bit of a hack
         while abs(th_err) > max_th_err and i<5:
+            # calculate end point and error
             self.end_pt = self.start_pt + [self.cos_th*actual_len, self.sin_th*actual_len, 0]
             self.end_pt_c, self.end_pt_grid = self.round(self.end_pt)
             th_err = self.th - math.atan2(self.end_pt_grid[1], self.end_pt_grid[0])
             if np.sign(desired_len) < 0: th_err += math.pi  # account for driving backwards
             if th_err > math.pi: th_err = 2*math.pi-th_err  # make sure errors is in the right direction
-            l_err = np.linalg.norm(self.end_pt_grid[:2]) - desired_len
             actual_len  += np.sign(desired_len)*0.5*self.grid_resolution
             i+=1
-            
+
+        # iterim points
         dX =  self.end_pt_grid - self.start_pt
-        n_interm = np.linalg.norm(dX) / self.interm_dist + 2# self.interm_nb
-        self.interm_nb = n_interm
-        self.interm_pts = np.array([self.start_pt + i*dX for i in np.linspace(0, 1, int(n_interm))])
+        self.interm_nb = np.linalg.norm(dX[:2]) / self.interm_dist + 2
+        self.interm_pts = np.array([self.start_pt + i*dX for i in np.linspace(0, 1, int(self.interm_nb))])
         
 class MPrimFactory:
     '''
