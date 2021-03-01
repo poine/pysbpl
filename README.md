@@ -19,5 +19,5 @@ If everything worked a visualization should appear
 
 ## Troubleshooting
 
-**I properly installed SBPL but pip install is saying it doesnt exist:** This is likely a path linking issue. Add the path to `libsbpl.so` (usually '/usr/share/lib')to `$LD_LIBRARY_PATH`
+**I properly installed SBPL but pip install is saying it doesnt exist:** This is likely a path linking issue. Add the path to `libsbpl.so` (usually `/usr/share/lib`) to `$LD_LIBRARY_PATH`
 
