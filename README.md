@@ -15,3 +15,9 @@ Python3 bindings and utilities for SBPL ( Search Based Planning Library, see htt
 4. Test by running: `python3 examples/run_sbpl_xytheta.py`. 
 
 If everything worked a visualization should appear
+
+
+## Troubleshooting
+
+**I properly installed SBPL but pip install is saying it doesnt exist:** This is likely a path linking issue. Add the path to `libsbpl.so` (usually '/usr/share/lib')to `$LD_LIBRARY_PATH`
+
