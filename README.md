@@ -16,6 +16,12 @@ Python3 bindings and utilities for SBPL ( Search Based Planning Library, see htt
 
 If everything worked a visualization should appear
 
+## To create new motion primitives
+See `pysbpl/gen_mprim.py`. Run with:  
+`python3 pysbpl/gen_mprim.py`  
+
+A test.mprim file should be created
+
 
 ## Troubleshooting
 

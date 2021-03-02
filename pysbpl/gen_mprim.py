@@ -219,14 +219,17 @@ class MPrimFactory:
         # Styling
         plt.rc('grid', linestyle="-", color='black')
         minc, maxc = -ngrid*self.grid_resolution, ngrid*self.grid_resolution
-        ax = plt.gca()
+        ax = plt.gca(label=str(show_angle))
         ax.set_xlim([minc,maxc]); ax.set_ylim([minc,maxc])
         minor_ticks = np.arange(minc, maxc, self.grid_resolution)
         major_ticks = np.arange(minc, maxc, 4*self.grid_resolution)
         ax.set_xticks(major_ticks); ax.set_yticks(major_ticks)
         ax.set_xticks(minor_ticks, minor=True)
         ax.set_yticks(minor_ticks, minor=True)
-        plt.axes().set_aspect('equal')
+        ax.set_xticklabels(np.round(major_ticks, 2), rotation='vertical')
+        ax.set_aspect('equal')
+        ax.set_ylabel('Y')
+        ax.set_xlabel('X')
         ax.grid(which='minor', alpha=0.2)                                                
         ax.grid(which='major', alpha=0.5)
 
@@ -262,21 +265,23 @@ class MPrimFactory:
         if not multi_plot:
             plt.show()
 
-    def check_all_dirs(self, show_prim_id, th_nb):
+    def check_all_dirs(self, show_prim_id=None, th_nb=None):
         '''
         Plot subset of motion primitives on grid.
         Different plot for each angle
         **Parameters**
           - `show_prim_id` (list): which primitve to show for a given angle. None=all 
-          - `th_nb` (list): which angles to show
+          - `th_nb` (list): which angles to show. None=all
         **Returns**
           - **None** 
         '''
+        if th_nb is None:
+            th_nb = range(0,self.th_nb) # all
         for a in th_nb:
             self.plot(show_angle=[a], show_prim_id=show_prim_id, multi_plot=True)
             plt.show()
 
-def gen_oscar_prims():
+def gen_example_prims():
     base_prims = [
         {'kind':MPrim_line, 'params':{'len_c': 1, 'cost':2}},             # forward straight short
         {'kind':MPrim_line, 'params':{'len_c': 8, 'cost':1}},             # forward straight long
@@ -293,15 +298,17 @@ def gen_oscar_prims():
         {'kind':MPrim_arc,  'params':{'R':1.00,  'dth_curr':-1, 'cost':3}},  # forward wide turning right
         {'kind':MPrim_arc,  'params':{'R':1.25,  'dth_curr': 1, 'cost':2}},  # forward wide turning left
         {'kind':MPrim_arc,  'params':{'R':1.25,  'dth_curr':-1, 'cost':2}},  # forward wide turning right
-        #{'kind':MPrim_arc,  'params':{'R':-0.15, 'dth_curr':-1, 'cost':6}}, # backward turning left
-        #{'kind':MPrim_arc,  'params':{'R':-0.15, 'dth_curr': 1, 'cost':6}}  # backward turning right
+        {'kind':MPrim_arc,  'params':{'R':-0.15, 'dth_curr':-1, 'cost':6}}, # backward turning left
+        {'kind':MPrim_arc,  'params':{'R':-0.15, 'dth_curr': 1, 'cost':6}}  # backward turning right
     ]
-    f = MPrimFactory(base_prims, grid_resolution=0.005)
-    f.build()
-    #f.plot()
-    f.check_all_dirs(None,[0]) 
-    f.write('/home/schmittle/Desktop/test.mprim')
+    return base_prims
     
 if __name__ == '__main__':
-    # oscar
-    gen_oscar_prims()
+    base_prims = gen_example_prims()
+
+    f = MPrimFactory(base_prims, grid_resolution=0.005, th_nb=16)
+    f.build()
+    f.plot() # all on one plot
+    #f.check_all_dirs() # one by one
+    f.write('test.mprim')
+    print("Motion primitives created and saved!")
