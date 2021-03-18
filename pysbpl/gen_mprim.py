@@ -10,6 +10,8 @@
 
 import os, math, numpy as np, matplotlib.pyplot as plt
 
+from pysbpl.store_metadata import Store_metadata_mprims
+
 class MPrim:
     '''
     Base motion primitive class
@@ -54,6 +56,7 @@ class MPrim:
     
     def round(self, real_pt):
         '''
+        [UPDATE]: grid_pt [-1] converted to integer
         Converts real number to grid point
         and returns real number as a multiple of resolution
         **Parameters**
@@ -62,7 +65,7 @@ class MPrim:
           - `grid_pt` (list): x, y, theta point on grid
           - real_pt_g` (list): x, y, theta point multiple of grid resolution
         '''
-        grid_pt = [int(np.round(real_pt[0]/self.grid_resolution)), int(np.round(real_pt[1]/self.grid_resolution)), int(round(real_pt[2]/self.th_res))%self.th_nb]
+        grid_pt = [int(np.round(real_pt[0]/self.grid_resolution)), int(np.round(real_pt[1]/self.grid_resolution)), int(int(round(real_pt[2]/self.th_res))%self.th_nb)]
         real_pt_g = [grid_pt[0]*self.grid_resolution, grid_pt[1]*self.grid_resolution, grid_pt[2]]
         return np.array(grid_pt), np.array(real_pt_g)
 
@@ -85,22 +88,29 @@ class MPrim_arc(MPrim):
         MPrim.__init__(self, base_prim_id, th_curr, th_res, grid_res, **kwargs)
 
         dth_curr, R = kwargs['dth_curr'], kwargs['R']  # heading variation and arc radius
+        self.R = R  #(Alrick)Storing the radius
+        
         dth = dth_curr * self.th_res # heading variation radians 
         X1 = self.pt_on_circle(R if dth>0 else -R, dth)
         R1 = np.array([[self.cos_th, -self.sin_th],[self.sin_th, self.cos_th]]) # rotation matrix
         X2 = np.dot(R1, X1) # end point rotated to current angle (th)
         self.end_pt =  np.array([X2[0], X2[1], self.th+dth])
         self.end_pt_c, self.end_pt_grid = self.round(self.end_pt) # discretize
+        # print ("End point c: ", self.end_pt_c)
 
         # interim points
-        interm_ths1 = np.linspace(0, dth, self.interm_nb)
+        #(Alrick) Added interm_ths0 for angles
+        interm_ths0 = np.linspace(self.th, self.end_pt_c[-1] * self.th_res, num = self.interm_nb)
+        interm_ths1 = np.linspace(0, dth, num = self.interm_nb) 
         interm_pts1 = [self.pt_on_circle(R if dth>0 else -R, th) for th in interm_ths1]
         self.interm_pts = np.zeros((self.interm_nb, 3))
         for i in range(self.interm_nb):
             self.interm_pts[i,:2] = np.dot(R1, interm_pts1[i])
-            self.interm_pts[i,2] = self.th + interm_ths1[i]
+            # self.interm_pts[i,2] = self.th + interm_ths1[i] #(Alrick) Commented out
+            self.interm_pts[i,2] = interm_ths0[i]
         # discretize last point to match end_pt_c, not sure if we need repeated points
-        self.interm_pts[-1] =  self.end_pt_grid
+        self.interm_pts[-1,:2] =  self.end_pt_c[:2] * grid_res
+        self.interm_pts[-1,-1] = self.end_pt_c[-1] * self.th_res
 
     def pt_on_circle(self, R, dtheta): 
         '''
@@ -176,6 +186,7 @@ class MPrimFactory:
         self.nb_mprim_per_angle = len(self.base_prims)
         self.th_nb = th_nb
         self.th_res = 2*math.pi/th_nb  # heading resolution 
+        self.metadata = Store_metadata_mprims() #Initializing mprim container
 
     def build(self):
         '''
@@ -202,8 +213,11 @@ class MPrimFactory:
             f.write('resolution_m: {:f}\n'.format(self.grid_resolution))
             f.write('numberofangles: {:d}\n'.format(self.th_nb))
             f.write('totalnumberofprimitives: {:d}\n'.format(self.th_nb*self.nb_mprim_per_angle))
-            for mprim in self.mprims:
+            for idx, mprim in enumerate(self.mprims):
+                self.metadata.add_mprim(mprim) #(Alrick) Adding mprim to metadata
                 f.write(mprim.to_string())
+                
+        self.metadata.save()    #Save the metadata into a json file
 
     def plot(self, ngrid=50, show_angle=None, show_prim_id=None, plot_points=None, multi_plot=False):
         '''

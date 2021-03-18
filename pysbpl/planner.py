@@ -16,6 +16,7 @@ class Planner:
         self.kwargs = kwargs
         self.config = Config(**kwargs)
         self.planner = sbpl.ARAPlanner(self.config.env)
+
         print('Planner Initialized')
 
     def plan(self, start, goal):
