@@ -1,6 +1,4 @@
-from distutils.core import setup
-from distutils.extension import Extension
-from Cython.Build import cythonize
+import setuptools
 from Cython.Distutils import build_ext
 
 ##
@@ -19,11 +17,9 @@ class my_build_ext(Cython.Distutils.build_ext):
 # extra_compile_args=["-std=c++11", "-Wno-cpp"] is for removing the deprecation warning
 #  because defining NPY_NO_DEPRECATED_API to NPY_1_7_API_VERSION breaks compilation
 
-
-
-ext = Extension(
-    "pysbpl",          # name of extension
-    ["sbpl.pyx"],      # filename of our Pyrex/Cython source
+ext = setuptools.Extension(
+    "pysbpl.sbpl",          # name of extension
+    ["pysbpl/sbpl.pyx"],      # filename of our Pyrex/Cython source
     language="c++",    # this causes Pyrex/Cython to create C++ source
     include_dirs=[],
     extra_compile_args=["-std=c++11", "-Wno-cpp"],
@@ -32,8 +28,26 @@ ext = Extension(
     runtime_library_dirs=[],
 )
 
-setup(
-    name = 'multicol',
+with open("README.md", "r", encoding="utf-8") as fh:
+    long_description = fh.read()
+
+setuptools.setup(
+    name = 'pysbpl',
     ext_modules = [ext],
-    cmdclass = {'build_ext': my_build_ext}
+    cmdclass = {'build_ext': my_build_ext},
+    version="0.0.1",
+    author="Edited by: Matt Schmittle",
+    author_email="schmttle@cs.washington.edu",
+    description="Python bindings for SBPL",
+    long_description=long_description,
+    long_description_content_type="text/markdown",
+    url="https://github.com/schmittlema/pysbpl",
+    packages=setuptools.find_packages(),
+    include_package_data=True,
+    classifiers=[
+        "Programming Language :: Python :: 3",
+        "License :: OSI Approved :: BSD3 License",
+        "Operating System :: OS Independent",
+    ],
+    python_requires='>=3.6',
 )

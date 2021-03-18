@@ -49,11 +49,22 @@ cdef extern from "sbpl/discrete_space_information/environment_navxythetalat.h":
         void GetCoordFromState(int stateID, int& x, int& y, int& theta)
         void ConvertStateIDPathintoXYThetaPath(vector[int]* stateIDPath, vector[c_sbpl_xy_theta_pt_t]* xythetaPath)
         bool SetEnvParameter(const char* parameter, int value)
+        void GetActionsFromStateIDPath(vector[int]* sol , vector[EnvNAVXYTHETALATAction_t]* actions);
+    cdef struct EnvNAVXYTHETALATAction_t: 
+        char starttheta
+        char dX
+        char dY
+        char endtheta
+        unsigned int cost
+        int motprimID
+        double turning_radius
        
 cdef class EnvironmentNAVXYTHETALAT:
     cdef c_EnvironmentNAVXYTHETALAT *thisptr      # hold a C++ instance which we're wrapping
+    cdef unsigned char* mapdata
 
     def __cinit__(self):
+        self.mapdata = NULL
         self.thisptr = new c_EnvironmentNAVXYTHETALAT()
         if self.thisptr is NULL:
             raise MemoryError()
@@ -68,30 +79,22 @@ cdef class EnvironmentNAVXYTHETALAT:
         self.thisptr.SetEnvParameter("cost_obsthresh", kwargs['obs_thresh'])
         self.thisptr.SetEnvParameter("cost_inscribed_thresh", kwargs['inscribed_thresh'])
         self.thisptr.SetEnvParameter("cost_possibly_circumscribed_thresh", kwargs['possibly_circumscribed_thresh'])
-        
+
         # not sure how to get that without setting them again, or is it alsways 0 and 1 ?
         cdef double startx = kwargs['start'][0], starty = kwargs['start'][1], starttheta = kwargs['start'][2]
         cdef double goalx = kwargs['goal'][0], goaly = kwargs['goal'][1], goaltheta = kwargs['goal'][2]
         start_id = self.thisptr.SetStart(startx, starty, starttheta)
         goal_id = self.thisptr.SetGoal(goalx, goaly, goaltheta)
-        return start_id, goal_id
 
+        return start_id, goal_id
 
     def initialize_from_file(self, filename):
         print "loading environment from {}".format(filename)
         self.thisptr.InitializeEnv(filename)
         
     def initialize_from_params(self, **kwargs):
-        _map = kwargs['map']
-        cdef int width = _map.width, height = _map.height
 
-        cdef unsigned char* mapdata
-        mapdata = <unsigned char *>malloc(width*height*sizeof(unsigned char))
-        for i, pixel_row in enumerate(_map.img[::-1]):  # same as flipud
-            for j in range(len(pixel_row)):
-                mapdata[i*width + j] =  int(pixel_row[j]*255)
-            
-                
+        cdef int width = kwargs['map'].width, height = kwargs['map'].height
         cdef double startx = kwargs['start'][0], starty = kwargs['start'][1], starttheta = kwargs['start'][2]
         cdef double goalx = kwargs['goal'][0], goaly = kwargs['goal'][1], goaltheta = kwargs['goal'][2]
         cdef goaltol_x =  kwargs['goal_tol'][0], goaltol_y = kwargs['goal_tol'][1], goaltol_theta = kwargs['goal_tol'][2]
@@ -104,15 +107,23 @@ cdef class EnvironmentNAVXYTHETALAT:
         cdef double nominalvel_mpersecs = kwargs['vel'], timetoturn45degsinplace_secs = kwargs['time_45_deg']
         cdef unsigned char obsthresh =  kwargs['obs_thresh']
         cdef const char* c_mprim_path = kwargs['mprim_path']
-        res = self.thisptr.InitializeEnv(width, height, mapdata,
+        res = self.thisptr.InitializeEnv(width, height, self.mapdata,
                                          startx, starty, starttheta, goalx, goaly, goaltheta,
                                          goaltol_x, goaltol_y, goaltol_theta,
                                          perimeter, cellsize_m,
                                          nominalvel_mpersecs, timetoturn45degsinplace_secs,
                                          obsthresh, c_mprim_path)
-        free(mapdata)
+        free(self.mapdata)
         if not res: return []
+
+    def update_map(self, new_map):
+        cdef int width = new_map.width, height = new_map.height
+        self.mapdata = <unsigned char *>malloc(width*height*sizeof(unsigned char))
+        for i, pixel_row in enumerate(new_map.img[::-1]):  # same as flipud
+            for j in range(len(pixel_row)):
+                self.mapdata[i*width + j] =  int(pixel_row[j]*255)
         
+
 
 #
 # SBPLPlanner
@@ -135,6 +146,7 @@ cdef extern from "sbpl/planners/araplanner.h":
         int replan(double allocated_time_secs, vector[int]* solution_stateIDs_V)
 
 cdef class ARAPlanner:
+    # TODO take planner params out of code
     cdef c_ARAPlanner *thisptr
     cdef c_EnvironmentNAVXYTHETALAT *env
 
@@ -144,22 +156,25 @@ cdef class ARAPlanner:
         self.env = <c_EnvironmentNAVXYTHETALAT*>e.thisptr
 
     def initialize(self, start_id, goal_id):
-        print 'in planner initialize'
         if self.thisptr.set_start(start_id) == 0:
             print 'set_start failed'
         if self.thisptr.set_goal(goal_id) == 0:
             print 'set_goal failed'
         cdef double initialEpsilon = 3.0
         self.thisptr.set_initialsolution_eps(initialEpsilon)
-        cdef bool bsearchuntilfirstsolution = False;
+        cdef bool bsearchuntilfirstsolution = True;
         self.thisptr.set_search_mode(bsearchuntilfirstsolution);
         
     def run(self):
-        print 'in planner run'
-        cdef double allocated_time = 30.
+        cdef double allocated_time = 1.
         cdef vector[int] sol
+        cdef vector[EnvNAVXYTHETALATAction_t] actions 
         cdef int bRet = self.thisptr.replan(allocated_time, &sol)
-        print 'bret ',  bRet
+        if bRet != 1: 
+            print("No solution!")
+            return None, None
+        else:
+            print("Solution Found!")
 
         # discrete solution
         cdef vector[int].iterator it = sol.begin()
@@ -179,6 +194,8 @@ cdef class ARAPlanner:
             xys.append([deref(it2).x, deref(it2).y])
             thetas.append(deref(it2).theta)
             inc(it2)
-        print('cont sol has {} values'.format(len(xys)))
+        print('Continuous solution has {} values'.format(len(xys)))
 
-        return np.array(xys), np.array(thetas)
+        # Get actions
+        self.env.GetActionsFromStateIDPath(&sol, &actions);
+        return np.array(xys), np.array(thetas), actions 
