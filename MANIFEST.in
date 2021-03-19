@@ -1,3 +1,0 @@
-recursive-include pysbpl/mprim *
-recursive-include pysbpl/maps *
-
