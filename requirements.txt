@@ -13,7 +13,7 @@ matplotlib == 3.2.2
 # pysbpl/pysbpl/gen_mprim.py: 11
 # pysbpl/pysbpl/planner.py: 2
 # pysbpl/pysbpl/plot.py: 2
-numpy == 1.19.2
+numpy == 1.22.0
 
 # pysbpl/pysbpl/map_util.py: 3
 opencv_contrib_python == 3.4.0.12
