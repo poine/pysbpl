@@ -19,4 +19,4 @@ numpy == 1.19.2
 opencv_contrib_python == 3.4.0.12
 
 # pysbpl/setup.py: 1
-setuptools == 20.7.0
+setuptools == 65.5.1
